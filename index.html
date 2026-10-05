@@ -1,0 +1,2992 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Base 10 to Base n · WeDo</title>
+
+  <style>
+    :root {
+      --page-bg: #f4f7fb;
+      --card: #ffffff;
+      --panel: #f8fafc;
+
+      --text: #172033;
+      --muted: #667085;
+
+      --border: #dbe2ea;
+      --border-dark: #cbd5e1;
+
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --blue-soft: #eff6ff;
+
+      --green: #166534;
+      --green-bg: #f0fdf4;
+      --green-border: #bbf7d0;
+
+      --red: #991b1b;
+      --red-bg: #fff7f7;
+      --red-border: #fecaca;
+
+      --shadow:
+        0 1px 2px rgba(16, 24, 40, 0.04),
+        0 4px 14px rgba(16, 24, 40, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--page-bg);
+      color: var(--text);
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1040px, calc(100% - 28px));
+      margin: 28px auto;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .settings-card {
+      padding: 20px 22px;
+      margin-bottom: 18px;
+    }
+
+    .practice-card {
+      padding: 22px;
+    }
+
+    /* ==================================================
+       BASE SELECTOR
+       ================================================== */
+
+    .section-title {
+      margin-bottom: 13px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .base-buttons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .base-button {
+      min-width: 76px;
+      min-height: 44px;
+
+      padding: 8px 13px;
+
+      border: 1.5px solid var(--border-dark);
+      border-radius: 10px;
+
+      background: white;
+      color: var(--text);
+
+      font-weight: 700;
+
+      cursor: pointer;
+
+      transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        transform 0.08s ease;
+    }
+
+    .base-button:hover {
+      background: var(--panel);
+    }
+
+    .base-button:active {
+      transform: translateY(1px);
+    }
+
+    .base-button.active {
+      background: var(--blue-soft);
+      border-color: var(--blue);
+      color: var(--blue-dark);
+    }
+
+    .settings-note {
+      margin-top: 11px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    /* ==================================================
+       PROBLEM
+       ================================================== */
+
+    .problem {
+      padding-bottom: 17px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .problem-label {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .target-base {
+      margin-top: 5px;
+      font-size: 1.2rem;
+      font-weight: 760;
+    }
+
+    .problem-number {
+      margin-top: 14px;
+      font-size: clamp(3.7rem, 10vw, 5.8rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    sub {
+      font-size: 0.45em;
+      vertical-align: -0.25em;
+    }
+
+    /* ==================================================
+       STEP HEADER
+       ================================================== */
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+
+      flex-wrap: wrap;
+
+      margin: 16px 0 11px;
+    }
+
+    .step-count {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .step-dots {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .step-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--border-dark);
+    }
+
+    .step-dot.done {
+      background: var(--blue);
+    }
+
+    .step-dot.current {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+    }
+
+    .phase-box {
+      margin-bottom: 14px;
+      padding: 11px 14px;
+      border-radius: 10px;
+      background: var(--panel);
+      text-align: center;
+      color: var(--text);
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    /* ==================================================
+       PLACE VALUE TABLE
+       ================================================== */
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    .place-table {
+      width: 100%;
+      min-width: 550px;
+
+      border-collapse: separate;
+      border-spacing: 0;
+
+      table-layout: fixed;
+
+      border: 1px solid var(--border);
+      border-radius: 13px;
+
+      overflow: hidden;
+
+      background: white;
+    }
+
+    .place-table td {
+      min-width: 120px;
+      padding: 12px 10px;
+
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .place-table td:last-child {
+      border-right: none;
+    }
+
+    .place-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .row-label {
+      width: 130px;
+
+      background: var(--panel);
+      color: var(--muted);
+
+      font-size: 0.76rem;
+      font-weight: 800;
+
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .place-cell {
+      min-height: 64px;
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .digit-cell {
+      min-height: 72px;
+      font-size: 1.8rem;
+      font-weight: 800;
+    }
+
+    .empty-cell {
+      color: #a8b0bd;
+      font-weight: 500;
+    }
+
+    .active-cell {
+      background: var(--blue-soft);
+      box-shadow: inset 0 0 0 2px var(--blue);
+    }
+
+    .place-input {
+      width: 100%;
+      max-width: 120px;
+      min-height: 44px;
+
+      padding: 7px 8px;
+
+      border: 1.5px solid var(--border-dark);
+      border-radius: 8px;
+
+      background: white;
+      color: var(--text);
+
+      text-align: center;
+
+      font-size: 1rem;
+      font-weight: 750;
+    }
+
+    .place-input:focus {
+      outline: none;
+
+      border-color: var(--blue);
+
+      box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    /* ==================================================
+       PLACE VALUE SETUP
+       ================================================== */
+
+    .place-setup {
+      margin-top: 12px;
+
+      padding: 13px 14px;
+
+      border: 1px solid var(--border);
+      border-radius: 11px;
+
+      background: var(--panel);
+    }
+
+    .setup-instruction {
+      font-size: 0.96rem;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .setup-help {
+      margin-top: 5px;
+
+      color: var(--muted);
+
+      font-size: 0.87rem;
+      line-height: 1.45;
+    }
+
+    .setup-actions {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+
+      flex-wrap: wrap;
+
+      margin-top: 11px;
+    }
+
+    /* ==================================================
+       WORK AREA
+       ================================================== */
+
+    .work-card {
+      margin-top: 16px;
+
+      border: 1px solid var(--border);
+      border-radius: 13px;
+
+      overflow: hidden;
+    }
+
+    .work-title {
+      padding: 10px 14px;
+
+      background: var(--panel);
+      color: var(--muted);
+
+      font-size: 0.8rem;
+      font-weight: 800;
+
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .work-body {
+      padding: 15px;
+    }
+
+    .work-question {
+      color: var(--text);
+
+      font-size: 1.08rem;
+      font-weight: 760;
+      line-height: 1.45;
+    }
+
+    .work-help {
+      margin-top: 5px;
+
+      color: var(--muted);
+
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .work-entry {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      flex-wrap: wrap;
+
+      margin-top: 12px;
+    }
+
+    .work-input {
+      width: 160px;
+      min-height: 45px;
+
+      padding: 7px 10px;
+
+      border: 1.5px solid var(--border-dark);
+      border-radius: 9px;
+
+      background: white;
+      color: var(--text);
+
+      text-align: center;
+
+      font-size: 1.08rem;
+      font-weight: 700;
+    }
+
+    .work-input:focus {
+      outline: none;
+
+      border-color: var(--blue);
+
+      box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    /* ==================================================
+       BUTTONS
+       ================================================== */
+
+    .button {
+      min-height: 42px;
+
+      padding: 8px 14px;
+
+      border-radius: 9px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    .primary {
+      border: 1px solid var(--blue);
+      background: var(--blue);
+      color: white;
+    }
+
+    .primary:hover {
+      background: var(--blue-dark);
+    }
+
+    .secondary {
+      border: 1px solid var(--border-dark);
+      background: white;
+      color: var(--text);
+    }
+
+    .secondary:hover {
+      background: var(--panel);
+    }
+
+    .skip {
+      border: 1px solid var(--border-dark);
+      background: white;
+      color: var(--muted);
+    }
+
+    .button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    /* ==================================================
+       FEEDBACK
+       ================================================== */
+
+    .feedback {
+      margin-top: 10px;
+
+      padding: 10px 12px;
+
+      border-radius: 9px;
+
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .feedback.correct {
+      border: 1px solid var(--green-border);
+      background: var(--green-bg);
+      color: var(--green);
+    }
+
+    .feedback.incorrect {
+      border: 1px solid var(--red-border);
+      background: var(--red-bg);
+      color: var(--red);
+    }
+
+    .feedback.reveal {
+      border: 1px solid var(--border);
+      background: var(--blue-soft);
+      color: var(--text);
+    }
+
+    /* ==================================================
+       HISTORY
+       ================================================== */
+
+    .history {
+      display: grid;
+      gap: 8px;
+
+      margin-top: 14px;
+    }
+
+    .history-line {
+      padding: 10px 12px;
+
+      border: 1px solid var(--border);
+      border-radius: 9px;
+
+      background: white;
+
+      color: var(--text);
+
+      font-size: 0.93rem;
+      line-height: 1.5;
+    }
+
+    .history-line strong {
+      font-weight: 800;
+    }
+
+    /* ==================================================
+       FINAL
+       ================================================== */
+
+    .final-box {
+      margin-top: 16px;
+
+      padding: 17px;
+
+      border: 1px solid var(--border);
+      border-radius: 12px;
+
+      background: var(--blue-soft);
+
+      text-align: center;
+    }
+
+    .final-label {
+      color: var(--muted);
+
+      font-size: 0.78rem;
+      font-weight: 800;
+
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .final-answer {
+      margin: 7px 0 12px;
+
+      font-size: 2.3rem;
+      font-weight: 800;
+    }
+
+    /* ==================================================
+       NAV
+       ================================================== */
+
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+
+      flex-wrap: wrap;
+
+      margin-top: 15px;
+    }
+
+    @media (max-width: 650px) {
+
+      .app {
+        width: min(100% - 18px, 1040px);
+        margin: 18px auto;
+      }
+
+      .settings-card,
+      .practice-card {
+        padding: 15px 13px;
+      }
+
+      .row-label {
+        width: 95px;
+      }
+
+      .place-table {
+        min-width: 500px;
+      }
+
+      .navigation {
+        justify-content: center;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+<main class="app">
+
+  <!-- ==================================================
+       BASE SELECTION
+       ================================================== -->
+
+  <section class="card settings-card">
+
+    <div class="section-title">
+      Choose the target bases you want included
+    </div>
+
+    <div
+      id="baseButtons"
+      class="base-buttons">
+    </div>
+
+    <div class="settings-note">
+      Select one or more bases from 2 through 9.
+    </div>
+
+  </section>
+
+
+  <!-- ==================================================
+       PRACTICE
+       ================================================== -->
+
+  <section class="card practice-card">
+
+    <div class="problem">
+
+      <div class="problem-label">
+        Convert the number below.
+      </div>
+
+      <div
+        id="targetBase"
+        class="target-base">
+      </div>
+
+      <div
+        id="problemNumber"
+        class="problem-number">
+      </div>
+
+    </div>
+
+
+    <div class="step-header">
+
+      <div
+        id="stepCount"
+        class="step-count">
+      </div>
+
+      <div
+        id="stepDots"
+        class="step-dots">
+      </div>
+
+    </div>
+
+
+    <div
+      id="phaseBox"
+      class="phase-box">
+    </div>
+
+
+    <div class="table-wrap">
+
+      <table class="place-table">
+        <tbody id="tableBody"></tbody>
+      </table>
+
+    </div>
+
+
+    <div id="workArea"></div>
+
+
+    <div class="navigation">
+
+      <button
+        id="backButton"
+        class="button secondary"
+        type="button">
+        ← Back
+      </button>
+
+      <button
+        id="nextButton"
+        class="button secondary"
+        type="button">
+        Next →
+      </button>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<script>
+
+(() => {
+
+  /*
+    ==================================================
+    DOM
+    ==================================================
+  */
+
+  const baseButtonsElement =
+    document.getElementById("baseButtons");
+
+  const targetBaseElement =
+    document.getElementById("targetBase");
+
+  const problemNumberElement =
+    document.getElementById("problemNumber");
+
+  const stepCountElement =
+    document.getElementById("stepCount");
+
+  const stepDotsElement =
+    document.getElementById("stepDots");
+
+  const phaseBoxElement =
+    document.getElementById("phaseBox");
+
+  const tableBodyElement =
+    document.getElementById("tableBody");
+
+  const workAreaElement =
+    document.getElementById("workArea");
+
+  const backButton =
+    document.getElementById("backButton");
+
+  const nextButton =
+    document.getElementById("nextButton");
+
+
+  /*
+    ==================================================
+    STATE
+    ==================================================
+  */
+
+  const selectedBases =
+    new Set([
+      2,3,4,5,6,7,8,9
+    ]);
+
+
+  let currentBase = 2;
+
+  let decimalValue = 0;
+
+  let numeral = "";
+
+  let columns = [];
+
+  let steps = [];
+
+  let currentStepIndex = 0;
+
+  let highestCompletedIndex = -1;
+
+
+  /*
+    ==================================================
+    HELPERS
+    ==================================================
+  */
+
+  function randomItem(array) {
+
+    return array[
+      Math.floor(
+        Math.random() *
+        array.length
+      )
+    ];
+
+  }
+
+
+  function fromBase(text, base) {
+
+    let value = 0;
+
+    for (const character of text) {
+
+      value =
+        value * base +
+        Number(character);
+
+    }
+
+    return value;
+
+  }
+
+
+  function normalizeNumber(value) {
+
+    return value
+      .trim()
+      .replace(/\s+/g, "")
+      .replace(/^0+(?=\d)/, "");
+
+  }
+
+
+  /*
+    ==================================================
+    GENERATE PROBLEM
+    ==================================================
+  */
+
+  function generateProblem(base) {
+
+    const length =
+      randomItem([
+        2,
+        3
+      ]);
+
+
+    let text;
+
+
+    do {
+
+      text =
+        String(
+          1 +
+          Math.floor(
+            Math.random() *
+            (base - 1)
+          )
+        );
+
+
+      for (
+        let index = 1;
+        index < length;
+        index++
+      ) {
+
+        text +=
+          String(
+            Math.floor(
+              Math.random() *
+              base
+            )
+          );
+
+      }
+
+    }
+
+    while (
+      [...text.slice(1)].every(
+        digit =>
+          digit === "0"
+      )
+    );
+
+
+    return {
+
+      numeral:
+        text,
+
+      value:
+        fromBase(
+          text,
+          base
+        )
+
+    };
+
+  }
+
+
+  /*
+    ==================================================
+    BASE BUTTONS
+    ==================================================
+  */
+
+  function createBaseButtons() {
+
+    for (
+      let base = 2;
+      base <= 9;
+      base++
+    ) {
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+
+      button.type =
+        "button";
+
+
+      button.className =
+        "base-button active";
+
+
+      button.textContent =
+        `Base ${base}`;
+
+
+      button.setAttribute(
+        "aria-pressed",
+        "true"
+      );
+
+
+      button.addEventListener(
+        "click",
+
+        function () {
+
+          if (
+            selectedBases.has(
+              base
+            )
+          ) {
+
+            if (
+              selectedBases.size ===
+              1
+            ) {
+
+              return;
+
+            }
+
+
+            selectedBases.delete(
+              base
+            );
+
+          }
+
+          else {
+
+            selectedBases.add(
+              base
+            );
+
+          }
+
+
+          const active =
+            selectedBases.has(
+              base
+            );
+
+
+          button.classList.toggle(
+            "active",
+            active
+          );
+
+
+          button.setAttribute(
+            "aria-pressed",
+            active
+              ? "true"
+              : "false"
+          );
+
+
+          newProblem();
+
+        }
+
+      );
+
+
+      baseButtonsElement.appendChild(
+        button
+      );
+
+    }
+
+  }
+
+
+  /*
+    ==================================================
+    BUILD PLACE-VALUE MODEL
+    ==================================================
+  */
+
+  function buildColumns() {
+
+    const digits =
+      [...numeral].map(
+        Number
+      );
+
+
+    const placeValues =
+      [];
+
+
+    for (
+      let power =
+        digits.length - 1;
+      power >= 0;
+      power--
+    ) {
+
+      placeValues.push(
+        Math.pow(
+          currentBase,
+          power
+        )
+      );
+
+    }
+
+
+    columns =
+      [];
+
+
+    let remaining =
+      decimalValue;
+
+
+    placeValues.forEach(
+      (placeValue, index) => {
+
+        const digit =
+          digits[index];
+
+
+        const amountUsed =
+          digit *
+          placeValue;
+
+
+        const remainder =
+          remaining -
+          amountUsed;
+
+
+        columns.push({
+
+          place:
+            placeValue,
+
+          digit:
+            digit,
+
+          start:
+            remaining,
+
+          used:
+            amountUsed,
+
+          remainder:
+            remainder,
+
+          placeDone:
+            false,
+
+          digitDone:
+            false
+
+        });
+
+
+        remaining =
+          remainder;
+
+      }
+    );
+
+  }
+
+
+  /*
+    ==================================================
+    BUILD STEPS
+    ==================================================
+
+    Step 1:
+      fill all place values
+
+    For each place:
+      A. number of groups / digit
+      B. amount left
+
+    Final:
+      read the numeral
+
+    ==================================================
+  */
+
+  function buildSteps() {
+
+    steps =
+      [];
+
+
+    /*
+      Place values
+    */
+
+    steps.push({
+
+      type:
+        "places",
+
+      completed:
+        false,
+
+      skipped:
+        false
+
+    });
+
+
+    /*
+      Each place has only TWO decisions.
+    */
+
+    columns.forEach(
+      (column, columnIndex) => {
+
+        /*
+          Number of groups.
+        */
+
+        steps.push({
+
+          type:
+            "digit",
+
+          columnIndex:
+            columnIndex,
+
+          answer:
+            String(
+              column.digit
+            ),
+
+          completed:
+            false,
+
+          skipped:
+            false
+
+        });
+
+
+        /*
+          Remainder after removing
+          those groups.
+        */
+
+        steps.push({
+
+          type:
+            "remainder",
+
+          columnIndex:
+            columnIndex,
+
+          answer:
+            String(
+              column.remainder
+            ),
+
+          completed:
+            false,
+
+          skipped:
+            false
+
+        });
+
+      }
+    );
+
+
+    /*
+      Final answer.
+    */
+
+    steps.push({
+
+      type:
+        "final",
+
+      answer:
+        numeral,
+
+      completed:
+        false,
+
+      skipped:
+        false
+
+    });
+
+  }
+
+
+  /*
+    ==================================================
+    COMPLETE STEP
+    ==================================================
+  */
+
+  function completeStep(
+    step,
+    skipped
+  ) {
+
+    step.completed =
+      true;
+
+
+    step.skipped =
+      skipped;
+
+
+    highestCompletedIndex =
+      Math.max(
+        highestCompletedIndex,
+        currentStepIndex
+      );
+
+
+    if (
+      step.type ===
+      "places"
+    ) {
+
+      columns.forEach(
+        column => {
+
+          column.placeDone =
+            true;
+
+        }
+      );
+
+    }
+
+
+    if (
+      step.type ===
+      "digit"
+    ) {
+
+      columns[
+        step.columnIndex
+      ].digitDone =
+        true;
+
+    }
+
+
+    render();
+
+  }
+
+
+  /*
+    ==================================================
+    TABLE
+    ==================================================
+  */
+
+  function renderTable() {
+
+    const step =
+      steps[
+        currentStepIndex
+      ];
+
+
+    /*
+      PLACE VALUE ROW
+    */
+
+    let placeRow =
+      `
+        <tr>
+
+          <td class="row-label">
+            Place Value
+          </td>
+      `;
+
+
+    columns.forEach(
+      (column, index) => {
+
+        if (
+          step.type ===
+            "places" &&
+          !step.completed
+        ) {
+
+          placeRow +=
+            `
+              <td class="place-cell active-cell">
+
+                <input
+                  class="place-input"
+                  data-place-index="${index}"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  aria-label="Place value ${index + 1}">
+
+              </td>
+            `;
+
+        }
+
+        else {
+
+          placeRow +=
+            `
+              <td class="place-cell">
+
+                ${
+                  column.placeDone
+                    ? column.place
+                    : '<span class="empty-cell">?</span>'
+                }
+
+              </td>
+            `;
+
+        }
+
+      }
+    );
+
+
+    placeRow +=
+      "</tr>";
+
+
+    /*
+      GROUP / DIGIT ROW
+    */
+
+    let digitRow =
+      `
+        <tr>
+
+          <td class="row-label">
+            Groups / Digit
+          </td>
+      `;
+
+
+    columns.forEach(
+      (column, index) => {
+
+        const active =
+          step.type ===
+            "digit" &&
+          step.columnIndex ===
+            index;
+
+
+        if (
+          active &&
+          !step.completed
+        ) {
+
+          digitRow +=
+            `
+              <td class="digit-cell active-cell">
+
+                <input
+                  id="digitInput"
+                  class="place-input"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  aria-label="Number of groups">
+
+              </td>
+            `;
+
+        }
+
+        else {
+
+          digitRow +=
+            `
+              <td class="digit-cell">
+
+                ${
+                  column.digitDone
+                    ? column.digit
+                    : '<span class="empty-cell">—</span>'
+                }
+
+              </td>
+            `;
+
+        }
+
+      }
+    );
+
+
+    digitRow +=
+      "</tr>";
+
+
+    tableBodyElement.innerHTML =
+      placeRow +
+      digitRow;
+
+  }
+
+
+  /*
+    ==================================================
+    WORK HISTORY
+    ==================================================
+  */
+
+  function buildWorkHistory() {
+
+    let html =
+      "";
+
+
+    columns.forEach(
+      (column, index) => {
+
+        const digitStep =
+          steps.find(
+            step =>
+              step.type ===
+                "digit" &&
+              step.columnIndex ===
+                index
+          );
+
+
+        const remainderStep =
+          steps.find(
+            step =>
+              step.type ===
+                "remainder" &&
+              step.columnIndex ===
+                index
+          );
+
+
+        if (
+          remainderStep &&
+          remainderStep.completed
+        ) {
+
+          html +=
+            `
+              <div class="history-line">
+
+                From
+                <strong>${column.start}</strong>,
+
+                take
+
+                <strong>
+                  ${column.digit}
+                  ${column.digit === 1 ? "group" : "groups"}
+                  of
+                  ${column.place}
+                </strong>.
+
+                <br>
+
+                ${column.digit} ×
+                ${column.place}
+                =
+                ${column.used}
+
+                &nbsp;&nbsp;and&nbsp;&nbsp;
+
+                ${column.start}
+                −
+                ${column.used}
+                =
+                <strong>${column.remainder}</strong>.
+
+              </div>
+            `;
+
+        }
+
+        else if (
+          digitStep &&
+          digitStep.completed
+        ) {
+
+          html +=
+            `
+              <div class="history-line">
+
+                From
+                <strong>${column.start}</strong>,
+
+                you can make
+
+                <strong>
+                  ${column.digit}
+                </strong>
+
+                ${column.digit === 1 ? "group" : "groups"}
+                of
+
+                <strong>
+                  ${column.place}
+                </strong>.
+
+              </div>
+            `;
+
+        }
+
+      }
+    );
+
+
+    if (
+      html ===
+      ""
+    ) {
+
+      return "";
+
+    }
+
+
+    return `
+      <div class="history">
+        ${html}
+      </div>
+    `;
+
+  }
+
+
+  /*
+    ==================================================
+    PLACE VALUE SETUP
+    ==================================================
+  */
+
+  function renderPlaceSetup() {
+
+    const step =
+      steps[
+        currentStepIndex
+      ];
+
+
+    if (
+      step.completed
+    ) {
+
+      return `
+        <div class="place-setup">
+
+          <div class="setup-instruction">
+            Place values completed.
+          </div>
+
+          <div class="setup-help">
+
+            The largest place value is on the left,
+            and the smallest place value is on the right.
+
+          </div>
+
+          <div class="feedback ${step.skipped ? "reveal" : "correct"}">
+
+            ${
+              step.skipped
+                ? "The place values were revealed."
+                : "✓ Correct."
+            }
+
+            The Base ${currentBase} place values are
+
+            <strong>
+              ${columns.map(
+                column =>
+                  column.place
+              ).join(", ")}
+            </strong>.
+
+          </div>
+
+        </div>
+      `;
+
+    }
+
+
+    return `
+      <div class="place-setup">
+
+        <div class="setup-instruction">
+
+          Fill in the Base ${currentBase} place values.
+
+        </div>
+
+        <div class="setup-help">
+
+          Put the
+          <strong>largest place value on the left</strong>
+          and the
+          <strong>smallest place value on the right</strong>.
+
+          Fill in all of the boxes before checking.
+
+        </div>
+
+        <div class="setup-actions">
+
+          <button
+            id="checkPlacesButton"
+            class="button primary"
+            type="button">
+            Check Place Values
+          </button>
+
+          <button
+            id="skipPlacesButton"
+            class="button skip"
+            type="button">
+            Skip This Step
+          </button>
+
+        </div>
+
+        <div id="placeFeedback"></div>
+
+      </div>
+    `;
+
+  }
+
+
+  /*
+    ==================================================
+    DIGIT STEP
+    ==================================================
+  */
+
+  function renderDigitStep(
+    step
+  ) {
+
+    const column =
+      columns[
+        step.columnIndex
+      ];
+
+
+    const history =
+      buildWorkHistory();
+
+
+    if (
+      step.completed
+    ) {
+
+      return `
+        ${history}
+
+        <div class="work-card">
+
+          <div class="work-title">
+            ${column.place}s Place
+          </div>
+
+          <div class="work-body">
+
+            <div class="work-question">
+
+              How many groups of
+              ${column.place}
+              can you make from
+              ${column.start}?
+
+            </div>
+
+            <div class="feedback ${step.skipped ? "reveal" : "correct"}">
+
+              ${
+                step.skipped
+                  ? "Revealed:"
+                  : "✓ Correct."
+              }
+
+              You can make
+
+              <strong>
+                ${column.digit}
+              </strong>
+
+              ${column.digit === 1 ? "group" : "groups"}
+              of ${column.place}.
+
+            </div>
+
+          </div>
+
+        </div>
+      `;
+
+    }
+
+
+    return `
+      ${history}
+
+      <div class="work-card">
+
+        <div class="work-title">
+          ${column.place}s Place
+        </div>
+
+        <div class="work-body">
+
+          <div class="work-question">
+
+            How many groups of
+
+            <strong>
+              ${column.place}
+            </strong>
+
+            can you make from
+
+            <strong>
+              ${column.start}
+            </strong>?
+
+          </div>
+
+          <div class="work-help">
+
+            Enter the number of groups
+            in the table above.
+
+          </div>
+
+          <div class="work-entry">
+
+            <button
+              id="checkDigitButton"
+              class="button primary"
+              type="button">
+              Check
+            </button>
+
+            <button
+              id="skipDigitButton"
+              class="button skip"
+              type="button">
+              Skip This Step
+            </button>
+
+          </div>
+
+          <div id="digitFeedback"></div>
+
+        </div>
+
+      </div>
+    `;
+
+  }
+
+
+  /*
+    ==================================================
+    REMAINDER STEP
+    ==================================================
+  */
+
+  function renderRemainderStep(
+    step
+  ) {
+
+    const column =
+      columns[
+        step.columnIndex
+      ];
+
+
+    const history =
+      buildWorkHistory();
+
+
+    if (
+      step.completed
+    ) {
+
+      return `
+        ${history}
+
+        <div class="work-card">
+
+          <div class="work-title">
+            Amount Left
+          </div>
+
+          <div class="work-body">
+
+            <div class="work-question">
+
+              If you take
+              ${column.digit}
+              ${column.digit === 1 ? "group" : "groups"}
+              of
+              ${column.place}
+              away from
+              ${column.start},
+              how much is left?
+
+            </div>
+
+            <div class="feedback ${step.skipped ? "reveal" : "correct"}">
+
+              ${
+                step.skipped
+                  ? "Revealed:"
+                  : "✓ Correct."
+              }
+
+              <strong>
+                ${column.remainder}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+      `;
+
+    }
+
+
+    return `
+      ${history}
+
+      <div class="work-card">
+
+        <div class="work-title">
+          Amount Left
+        </div>
+
+        <div class="work-body">
+
+          <div class="work-question">
+
+            If you take
+
+            <strong>
+              ${column.digit}
+              ${column.digit === 1 ? "group" : "groups"}
+              of
+              ${column.place}
+            </strong>
+
+            away from
+
+            <strong>
+              ${column.start}
+            </strong>,
+
+            how much is left?
+
+          </div>
+
+          <div class="work-entry">
+
+            <input
+              id="workInput"
+              class="work-input"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off">
+
+            <button
+              id="checkWorkButton"
+              class="button primary"
+              type="button">
+              Check
+            </button>
+
+            <button
+              id="skipWorkButton"
+              class="button skip"
+              type="button">
+              Skip This Step
+            </button>
+
+          </div>
+
+          <div id="workFeedback"></div>
+
+        </div>
+
+      </div>
+    `;
+
+  }
+
+
+  /*
+    ==================================================
+    FINAL STEP
+    ==================================================
+  */
+
+  function renderFinalStep(
+    step
+  ) {
+
+    const history =
+      buildWorkHistory();
+
+
+    if (
+      step.completed
+    ) {
+
+      return `
+        ${history}
+
+        <div class="final-box">
+
+          <div class="final-label">
+            Completed Conversion
+          </div>
+
+          <div class="final-answer">
+
+            ${decimalValue}
+            =
+            ${numeral}<sub>${currentBase}</sub>
+
+          </div>
+
+          <button
+            id="anotherButton"
+            class="button primary"
+            type="button">
+            Try Another Problem
+          </button>
+
+        </div>
+      `;
+
+    }
+
+
+    return `
+      ${history}
+
+      <div class="work-card">
+
+        <div class="work-title">
+          Final Answer
+        </div>
+
+        <div class="work-body">
+
+          <div class="work-question">
+
+            Read the digits in the table
+            from the
+
+            <strong>
+              largest place value
+            </strong>
+
+            to the
+
+            <strong>
+              smallest place value
+            </strong>.
+
+            What is
+            ${decimalValue}
+            in Base ${currentBase}?
+
+          </div>
+
+          <div class="work-entry">
+
+            <input
+              id="workInput"
+              class="work-input"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off">
+
+            <button
+              id="checkWorkButton"
+              class="button primary"
+              type="button">
+              Check
+            </button>
+
+            <button
+              id="skipWorkButton"
+              class="button skip"
+              type="button">
+              Skip This Step
+            </button>
+
+          </div>
+
+          <div id="workFeedback"></div>
+
+        </div>
+
+      </div>
+    `;
+
+  }
+
+
+  /*
+    ==================================================
+    WORK AREA
+    ==================================================
+  */
+
+  function renderWorkArea() {
+
+    const step =
+      steps[
+        currentStepIndex
+      ];
+
+
+    if (
+      step.type ===
+      "places"
+    ) {
+
+      phaseBoxElement.innerHTML =
+        `
+          Step 1:
+          Build the Base ${currentBase}
+          place-value table.
+        `;
+
+
+      workAreaElement.innerHTML =
+        renderPlaceSetup();
+
+
+      return;
+
+    }
+
+
+    if (
+      step.type ===
+      "digit"
+    ) {
+
+      const column =
+        columns[
+          step.columnIndex
+        ];
+
+
+      phaseBoxElement.innerHTML =
+        `
+          Work with the
+          <strong>${column.place}s place</strong>.
+        `;
+
+
+      workAreaElement.innerHTML =
+        renderDigitStep(
+          step
+        );
+
+
+      return;
+
+    }
+
+
+    if (
+      step.type ===
+      "remainder"
+    ) {
+
+      phaseBoxElement.innerHTML =
+        `
+          Find how much is left.
+        `;
+
+
+      workAreaElement.innerHTML =
+        renderRemainderStep(
+          step
+        );
+
+
+      return;
+
+    }
+
+
+    phaseBoxElement.innerHTML =
+      `
+        Read the completed place-value table.
+      `;
+
+
+    workAreaElement.innerHTML =
+      renderFinalStep(
+        step
+      );
+
+  }
+
+
+  /*
+    ==================================================
+    PROGRESS
+    ==================================================
+  */
+
+  function renderProgress() {
+
+    stepCountElement.textContent =
+      `Step ${
+        currentStepIndex + 1
+      } of ${
+        steps.length
+      }`;
+
+
+    stepDotsElement.innerHTML =
+      steps
+        .map(
+          (
+            step,
+            index
+          ) => {
+
+            let classes =
+              "step-dot";
+
+
+            if (
+              step.completed
+            ) {
+
+              classes +=
+                " done";
+
+            }
+
+
+            if (
+              index ===
+              currentStepIndex
+            ) {
+
+              classes +=
+                " current";
+
+            }
+
+
+            return `
+              <span class="${classes}"></span>
+            `;
+
+          }
+        )
+        .join("");
+
+  }
+
+
+  /*
+    ==================================================
+    PLACE-VALUE EVENTS
+    ==================================================
+  */
+
+  function attachPlaceSetupEvents() {
+
+    const step =
+      steps[
+        currentStepIndex
+      ];
+
+
+    if (
+      step.type !==
+      "places" ||
+      step.completed
+    ) {
+
+      return;
+
+    }
+
+
+    const checkButton =
+      document.getElementById(
+        "checkPlacesButton"
+      );
+
+
+    const skipButton =
+      document.getElementById(
+        "skipPlacesButton"
+      );
+
+
+    const feedback =
+      document.getElementById(
+        "placeFeedback"
+      );
+
+
+    const inputs =
+      [
+        ...document.querySelectorAll(
+          ".place-input[data-place-index]"
+        )
+      ];
+
+
+    checkButton.addEventListener(
+      "click",
+
+      function () {
+
+        const answers =
+          inputs.map(
+            input =>
+              normalizeNumber(
+                input.value
+              )
+          );
+
+
+        if (
+          answers.some(
+            answer =>
+              answer ===
+              ""
+          )
+        ) {
+
+          feedback.className =
+            "feedback incorrect";
+
+
+          feedback.textContent =
+            "Fill in all of the place-value boxes before checking.";
+
+
+          return;
+
+        }
+
+
+        const correct =
+          answers.every(
+            (
+              answer,
+              index
+            ) =>
+              answer ===
+              String(
+                columns[
+                  index
+                ].place
+              )
+          );
+
+
+        if (
+          correct
+        ) {
+
+          completeStep(
+            step,
+            false
+          );
+
+        }
+
+        else {
+
+          feedback.className =
+            "feedback incorrect";
+
+
+          feedback.innerHTML =
+            `
+              Not quite.
+
+              Put the
+              <strong>largest place value on the left</strong>
+              and the
+              <strong>smallest place value on the right</strong>.
+            `;
+
+        }
+
+      }
+
+    );
+
+
+    skipButton.addEventListener(
+      "click",
+
+      function () {
+
+        completeStep(
+          step,
+          true
+        );
+
+      }
+
+    );
+
+
+    inputs.forEach(
+      (
+        input,
+        index
+      ) => {
+
+        input.addEventListener(
+          "keydown",
+
+          function (
+            event
+          ) {
+
+            if (
+              event.key !==
+              "Enter"
+            ) {
+
+              return;
+
+            }
+
+
+            event.preventDefault();
+
+
+            if (
+              index <
+              inputs.length - 1
+            ) {
+
+              inputs[
+                index + 1
+              ].focus();
+
+            }
+
+            else {
+
+              checkButton.click();
+
+            }
+
+          }
+
+        );
+
+      }
+    );
+
+
+    if (
+      inputs.length
+    ) {
+
+      inputs[0].focus();
+
+    }
+
+  }
+
+
+  /*
+    ==================================================
+    DIGIT EVENTS
+    ==================================================
+  */
+
+  function attachDigitEvents() {
+
+    const step =
+      steps[
+        currentStepIndex
+      ];
+
+
+    if (
+      step.type !==
+        "digit" ||
+      step.completed
+    ) {
+
+      return;
+
+    }
+
+
+    const input =
+      document.getElementById(
+        "digitInput"
+      );
+
+
+    const checkButton =
+      document.getElementById(
+        "checkDigitButton"
+      );
+
+
+    const skipButton =
+      document.getElementById(
+        "skipDigitButton"
+      );
+
+
+    const feedback =
+      document.getElementById(
+        "digitFeedback"
+      );
+
+
+    checkButton.addEventListener(
+      "click",
+
+      function () {
+
+        const answer =
+          normalizeNumber(
+            input.value
+          );
+
+
+        if (
+          answer ===
+          ""
+        ) {
+
+          feedback.className =
+            "feedback incorrect";
+
+
+          feedback.textContent =
+            "Enter the number of groups or choose Skip.";
+
+
+          return;
+
+        }
+
+
+        if (
+          answer ===
+          step.answer
+        ) {
+
+          completeStep(
+            step,
+            false
+          );
+
+        }
+
+        else {
+
+          feedback.className =
+            "feedback incorrect";
+
+
+          feedback.textContent =
+            "Not quite. Think about how many complete groups you can make.";
+
+        }
+
+      }
+
+    );
+
+
+    skipButton.addEventListener(
+      "click",
+
+      function () {
+
+        completeStep(
+          step,
+          true
+        );
+
+      }
+
+    );
+
+
+    input.addEventListener(
+      "keydown",
+
+      function (
+        event
+      ) {
+
+        if (
+          event.key ===
+          "Enter"
+        ) {
+
+          event.preventDefault();
+
+          checkButton.click();
+
+        }
+
+      }
+
+    );
+
+
+    input.focus();
+
+  }
+
+
+  /*
+    ==================================================
+    REMAINDER / FINAL EVENTS
+    ==================================================
+  */
+
+  function attachWorkEvents() {
+
+    const step =
+      steps[
+        currentStepIndex
+      ];
+
+
+    if (
+      (
+        step.type !==
+          "remainder" &&
+        step.type !==
+          "final"
+      ) ||
+      step.completed
+    ) {
+
+      return;
+
+    }
+
+
+    const input =
+      document.getElementById(
+        "workInput"
+      );
+
+
+    const checkButton =
+      document.getElementById(
+        "checkWorkButton"
+      );
+
+
+    const skipButton =
+      document.getElementById(
+        "skipWorkButton"
+      );
+
+
+    const feedback =
+      document.getElementById(
+        "workFeedback"
+      );
+
+
+    checkButton.addEventListener(
+      "click",
+
+      function () {
+
+        const answer =
+          normalizeNumber(
+            input.value
+          );
+
+
+        if (
+          answer ===
+          ""
+        ) {
+
+          feedback.className =
+            "feedback incorrect";
+
+
+          feedback.textContent =
+            "Enter an answer or choose Skip.";
+
+
+          return;
+
+        }
+
+
+        if (
+          answer ===
+          step.answer
+        ) {
+
+          completeStep(
+            step,
+            false
+          );
+
+        }
+
+        else {
+
+          feedback.className =
+            "feedback incorrect";
+
+
+          feedback.textContent =
+            "Not quite. Try the calculation again.";
+
+        }
+
+      }
+
+    );
+
+
+    skipButton.addEventListener(
+      "click",
+
+      function () {
+
+        completeStep(
+          step,
+          true
+        );
+
+      }
+
+    );
+
+
+    input.addEventListener(
+      "keydown",
+
+      function (
+        event
+      ) {
+
+        if (
+          event.key ===
+          "Enter"
+        ) {
+
+          event.preventDefault();
+
+          checkButton.click();
+
+        }
+
+      }
+
+    );
+
+
+    input.focus();
+
+  }
+
+
+  /*
+    ==================================================
+    NAVIGATION
+    ==================================================
+  */
+
+  function renderNavigation() {
+
+    const step =
+      steps[
+        currentStepIndex
+      ];
+
+
+    backButton.disabled =
+      currentStepIndex ===
+      0;
+
+
+    nextButton.disabled =
+      currentStepIndex ===
+        steps.length - 1 ||
+      !(
+        step.completed ||
+        currentStepIndex <
+          highestCompletedIndex
+      );
+
+  }
+
+
+  backButton.addEventListener(
+    "click",
+
+    function () {
+
+      if (
+        currentStepIndex >
+        0
+      ) {
+
+        currentStepIndex--;
+
+        render();
+
+      }
+
+    }
+
+  );
+
+
+  nextButton.addEventListener(
+    "click",
+
+    function () {
+
+      const step =
+        steps[
+          currentStepIndex
+        ];
+
+
+      if (
+        currentStepIndex <
+          steps.length - 1 &&
+        (
+          step.completed ||
+          currentStepIndex <
+            highestCompletedIndex
+        )
+      ) {
+
+        currentStepIndex++;
+
+        render();
+
+      }
+
+    }
+
+  );
+
+
+  /*
+    ==================================================
+    ANOTHER PROBLEM
+    ==================================================
+  */
+
+  function attachAnotherEvent() {
+
+    const anotherButton =
+      document.getElementById(
+        "anotherButton"
+      );
+
+
+    if (
+      anotherButton
+    ) {
+
+      anotherButton.addEventListener(
+        "click",
+        newProblem
+      );
+
+    }
+
+  }
+
+
+  /*
+    ==================================================
+    RENDER
+    ==================================================
+  */
+
+  function render() {
+
+    renderProgress();
+
+    renderTable();
+
+    renderWorkArea();
+
+    renderNavigation();
+
+    attachPlaceSetupEvents();
+
+    attachDigitEvents();
+
+    attachWorkEvents();
+
+    attachAnotherEvent();
+
+  }
+
+
+  /*
+    ==================================================
+    NEW PROBLEM
+    ==================================================
+  */
+
+  function newProblem() {
+
+    currentBase =
+      randomItem(
+        [...selectedBases]
+      );
+
+
+    const problem =
+      generateProblem(
+        currentBase
+      );
+
+
+    decimalValue =
+      problem.value;
+
+
+    numeral =
+      problem.numeral;
+
+
+    targetBaseElement.textContent =
+      `Convert to Base ${currentBase}`;
+
+
+    problemNumberElement.textContent =
+      decimalValue;
+
+
+    buildColumns();
+
+    buildSteps();
+
+
+    currentStepIndex =
+      0;
+
+
+    highestCompletedIndex =
+      -1;
+
+
+    render();
+
+  }
+
+
+  /*
+    ==================================================
+    START
+    ==================================================
+  */
+
+  createBaseButtons();
+
+  newProblem();
+
+})();
+</script>
+
+</body>
+</html>
